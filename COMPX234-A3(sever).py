@@ -12,11 +12,12 @@ def handle_client(client_socket, client_address):
             if not data:
                 break #If no data is received, break out of the loop.
       
-            msg_size = int(data[:3])
-            command = data[3]
+            msg_size = int(data[:3]) #msg_size: The total length of the message, parsed from the first 3 characters of the message.
+            command = data[3] #command: The operation command, obtained from the 4th character of the message. It can be R (read), G (get and remove), or P (put).
             key = data[4:msg_size - 1] if command != 'P' else data[4:msg_size - len(data.split(' ')[-1]) - 2]
+            #key: The key. Different truncations are made according to different commands.
             value = data.split(' ')[-1] if command == 'P' else ''
-
+            #value: The value, which only exists when the command is P.
             response = ''
             total_operations += 1 #total_operations is incremented by 1, indicating that one operation has been processed.
             if command == 'R':#R: Read operation. If the key exists, return the corresponding value; otherwise, return an error message.
