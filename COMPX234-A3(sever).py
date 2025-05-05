@@ -1,6 +1,7 @@
 import socket
 import threading
 import time
+# Functions that handle client requests
 def handle_client(client_socket, client_address):
     global tuple_space, total_clients, total_operations, total_reads, total_gets, total_puts, total_errors
     total_clients += 1
@@ -51,4 +52,61 @@ def handle_client(client_socket, client_address):
       #If an exception occurs while handling the client request, total_errors is incremented by 1, and an error message is printed.
     finally:
         client_socket.close()
-      #Whether an exception occurs or not, finally close the socket connection with the client.
+      #Whether an exception occurs or not, finally close the socket connection with the client
+
+# A function that prints tuple space information periodically
+ def print_tuple_space_summary():
+    global tuple_space, total_clients, total_operations, total_reads, total_gets, total_puts, total_errors
+    while True:
+        time.sleep(10) 
+        #Pausing the program for 10 seconds means that subsequent statistics and printing operations are performed every 10 seconds.
+        tuple_count = len(tuple_space)
+       # Gets the number of key-value pairs in the tuple space.
+        if tuple_count == 0:
+            avg_tuple_size = 0
+            avg_key_size = 0
+            avg_value_size = 0
+        else:
+            total_tuple_size = sum(len(key) + len(value) for key, value in tuple_space.items())
+            #The sum function and generator expressions calculate the total length of all key-value pairs
+            total_key_size = sum(len(key) for key in tuple_space.keys())
+            #Calculate the total length of all keys
+            total_value_size = sum(len(value) for value in tuple_space.values())
+            #Calculate the total length of all value
+            avg_tuple_size = total_tuple_size / tuple_count
+            avg_key_size = total_key_size / tuple_count
+            avg_value_size = total_value_size / tuple_count
+            #The average tuple size, average key size, and average size are calculated separately, i.e., the total length divided by the number of tuples
+
+        print(f"Tuple Space Summary:")
+        print(f"Number of tuples: {tuple_count}")
+        print(f"Average tuple size: {avg_tuple_size}")
+        print(f"Average key size: {avg_key_size}")
+        print(f"Average value size: {avg_value_size}")
+        print(f"Total clients: {total_clients}")
+        print(f"Total operations: {total_operations}")
+        print(f"Total READs: {total_reads}")
+        print(f"Total GETs: {total_gets}")
+        print(f"Total PUTs: {total_puts}")
+        print(f"Total errors: {total_errors}")
+        #The f-string is used to format the statistics of the output tuple space, which is convenient to view the status and operation of the tuple space
+   # Main function, start the server     
+def start_server():
+    global tuple_space, total_clients, total_operations, total_reads, total_gets, total_puts, total_errors
+    tuple_space = {}
+    total_clients = 0
+    total_operations = 0
+    total_reads = 0
+    total_gets = 0
+    total_puts = 0
+    total_errors = 0
+
+    # This condition determines whether the number of command-line arguments is 2 (script name and port number). 
+    if len(sys.argv) != 2:
+        print("Usage: python server.py <port>")
+        return
+    port = int(sys.argv[1])
+   # Then check if the port number is in the range of 50000 to 59999
+    if not 50000 <= port <= 59999:
+        print("Port number should be between 50000 and 59999")
+        return
