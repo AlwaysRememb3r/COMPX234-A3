@@ -110,3 +110,28 @@ def start_server():
     if not 50000 <= port <= 59999:
         print("Port number should be between 50000 and 59999")
         return
+# Create a TCP socket
+    server_socket = socket.socket(socket.AF_INET, socket. SOCK_STREAM)
+    # Set socket options to allow address reuse
+    server_socket.setsockopt(socket. SOL_SOCKET, socket. SO_REUSEADDR, 1)
+    # To bind the address and port, here we use the idea of bind in the lecture
+    server_socket.bind(('localhost', port))
+    # Start listening for the connection, corresponding to the listen in the lecture
+    server_socket.listen(5)
+    print(f"Server is running on port {port}, waiting for clients...")
+
+    # Start the thread that prints the tuple space information
+    summary_thread = threading. Thread(target=print_tuple_space_summary)
+    summary_thread.daemon = True
+    summary_thread.start()
+while True:
+        # Accept client connections
+        client_socket, client_address = server_socket.accept()
+        # Create a new thread for each client to process the request
+        client_thread = threading. Thread(target=handle_client, args=(client_socket, client_address))
+        client_thread.start()
+
+
+if __name__ == "__main__":
+    start_server()
+
