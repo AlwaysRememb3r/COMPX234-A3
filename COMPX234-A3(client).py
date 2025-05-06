@@ -1,5 +1,6 @@
 import socket
 import sys
+import os
 # Functions that handle client requests
 def process_requests(server_host, server_port, request_file):
     # Create a TCP socket
@@ -38,17 +39,30 @@ def process_requests(server_host, server_port, request_file):
 
 # Main function, start the client
 def main():
-    # Check the command line parameters
+    # Check the command line arguments, now all you need is the server host, port, and directory path
     if len(sys.argv) != 4:
-        print("Usage: python client.py <server_host> <server_port> <request_file>")
+        print("Usage: python client.py <server_host> <server_port> <directory_path>")
         return
     server_host = sys.argv[1]
     server_port = int(sys.argv[2])
-    request_file = sys.argv[3]
+    directory_path = sys.argv[3]
 
-    process_requests(server_host, server_port, request_file)
+    # Check if the directory exists
+    if not os.path.isdir(directory_path):
+        print(f"Error: The specified directory {directory_path} does not exist.")
+        return
+
+    # Get all .txt files in the directory
+    txt_files = [os.path.join(directory_path, f) for f in os.listdir(directory_path) if f.endswith('.txt')]
+
+    # Process each .txt file
+    for txt_file in txt_files:
+        print(f"Processing file: {txt_file}")
+        process_requests(server_host, server_port, txt_file)
 
 
 if __name__ == "__main__":
     main()
+
+
 
