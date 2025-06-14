@@ -104,7 +104,7 @@ class UDPServer:
                         file_data = file.read(block_size)
 
                         # Encode binary data to Base64 (help for A4: Base64 Encoding)
-                        base64_data = base64.b64encode(file_data).decode()
+                        base64_data = base64.b64encode(file_data).decode('utf-8')
                         # Construct response with encoded data (Protocol specification)
                         response = f"FILE {filename} OK START {start} END {end} DATA {base64_data}"
                         client_socket.sendto(response.encode(), client_addr)
