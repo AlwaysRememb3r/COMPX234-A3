@@ -102,7 +102,8 @@ class UDPClient:
                     # Write data to file at correct position
                     file.seek(received_start)
                     file.write(file_data)
-                    
+        except UnicodeDecodeError:
+        print(f"Error: Failed to decode file {filename} (possibly binary data)")
                     bytes_received += len(file_data)
                     print("*", end='', flush=True)  # Print progress indicator
                 
