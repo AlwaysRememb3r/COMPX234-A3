@@ -15,7 +15,7 @@ class UDPServer:
 
     def start_server(self):
         try:
-            #  Create UDP socket for welcoming client requests (Lecture 5: Socket Programming)
+            # Create UDP socket for welcoming client requests (Lecture 5: Socket Programming)
             self.welcome_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             # Allow address reuse to prevent "address in use" errors (help for A4: Socket Configuration)
             self.welcome_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
