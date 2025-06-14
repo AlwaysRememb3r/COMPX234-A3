@@ -8,8 +8,9 @@ class UDPClient:
         self.server_host = hostname
         self.server_port = port
         self.file_list = file_list
+        # Create UDP socket for communication (Lecture 5: Socket Programming)
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.initial_timeout = 1000  # 1 second
+        self.initial_timeout = 1000  # 1 second in milliseconds (help for A4: Timeout Setting)
         self.max_retries = 5
 
     def send_and_receive(self, message, address, port):
@@ -17,11 +18,13 @@ class UDPClient:
         current_timeout = self.initial_timeout
         while retries < self.max_retries:
             try:
+                # Send message and set timeout (Lecture 7: UDP Timeout Handling)
                 self.socket.sendto(message.encode('utf-8'), (address, port))
                 self.socket.settimeout(current_timeout / 1000)
                 response, _ = self.socket.recvfrom(65536)
                 return response.decode('utf-8').strip()
             except socket.timeout:
+                # Implement exponential backoff on timeout (help for A4: Retry Mechanism)
                 retries += 1
                 current_timeout *= 2
                 print(f"Timeout, retry {retries}/{self.max_retries}")
@@ -33,7 +36,7 @@ class UDPClient:
     def download_file(self, filename):
         print(f"\nDownloading: {filename}")
         try:
-            # Step 1: Send DOWNLOAD request
+            # Step 1: Send DOWNLOAD request (Protocol specification)
             download_msg = f"DOWNLOAD {filename}"
             response = self.send_and_receive(download_msg, self.server_host, self.server_port)
 
@@ -42,6 +45,7 @@ class UDPClient:
                 return False
 
             parts = response.split()
+            # Validate OK response format (Protocol specification)
             if len(parts) < 6 or parts[0] != "OK" or parts[2] != "SIZE" or parts[4] != "PORT":
                 print(f"Invalid response: {response}")
                 return False
@@ -50,7 +54,7 @@ class UDPClient:
             data_port = int(parts[5])
             print(f"File size: {file_size} bytes, using port {data_port}")
 
-            # Step 2: Download file blocks
+            # Step 2: Download file in blocks (Protocol specification)
             with open(filename, 'wb') as file:
                 bytes_received = 0
                 block_size = 1000
@@ -60,19 +64,21 @@ class UDPClient:
                     request_msg = f"FILE {filename} GET START {start} END {end}"
                     response = self.send_and_receive(request_msg, self.server_host, data_port)
 
-                    # Parse response (split into max 8 parts to protect DATA)
+                    # Parse response (limit split to protect DATA field)
                     parts = response.split(' ', 7)
+                    # Validate block response format (Protocol specification)
                     if len(parts) < 8 or parts[0] != "FILE" or parts[2] != "OK":
                         print(f"Invalid block response: {response}")
                         continue
 
                     base64_data = parts[7]
+                    # Decode Base64 data to binary (help for A4: Base64 Decoding)
                     file_data = base64.b64decode(base64_data)
                     file.write(file_data)
                     bytes_received += len(file_data)
                     print("*", end='', flush=True)
 
-                # Step 3: Send CLOSE
+                # Step 3: Send CLOSE request (Protocol specification)
                 close_msg = f"FILE {filename} CLOSE"
                 self.send_and_receive(close_msg, self.server_host, data_port)
                 print(f"\nDownload complete: {filename}")
@@ -85,6 +91,7 @@ class UDPClient:
 
     def run(self):
         try:
+            # Read file list (File I/O operation)
             with open(self.file_list, 'r', encoding='utf-8') as f:
                 files = [line.strip() for line in f if line.strip()]
 
@@ -94,6 +101,7 @@ class UDPClient:
         except Exception as e:
             print(f"Error: {e}")
         finally:
+            # Close socket to release resources (Resource management)
             self.socket.close()
 
 if __name__ == "__main__":
